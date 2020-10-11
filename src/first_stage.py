@@ -8,7 +8,6 @@ from .box_utils import nms, _preprocess
 
 def run_first_stage(image, net, scale, threshold):
     """Run P-Net, generate bounding boxes, and do NMS.
-
     Arguments:
         image: an instance of PIL.Image.
         net: an instance of pytorch's nn.Module, P-Net.
@@ -17,7 +16,6 @@ def run_first_stage(image, net, scale, threshold):
         threshold: a float number,
             threshold on the probability of a face when generating
             bounding boxes from predictions of the net.
-
     Returns:
         a float numpy array of shape [n_boxes, 9],
             bounding boxes with scores and offsets (4 + 1 + 4).
@@ -47,14 +45,12 @@ def run_first_stage(image, net, scale, threshold):
 def _generate_bboxes(probs, offsets, scale, threshold):
     """Generate bounding boxes at places
     where there is probably a face.
-
     Arguments:
         probs: a float numpy array of shape [n, m].
         offsets: a float numpy array of shape [1, 4, n, m].
         scale: a float number,
             width and height of the image were scaled by this number.
         threshold: a float number.
-
     Returns:
         a float numpy array of shape [n_boxes, 9]
     """

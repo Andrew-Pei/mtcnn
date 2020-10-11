@@ -4,13 +4,11 @@ from PIL import Image
 
 def nms(boxes, overlap_threshold=0.5, mode='union'):
     """Non-maximum suppression.
-
     Arguments:
         boxes: a float numpy array of shape [n, 5],
             where each row is (xmin, ymin, xmax, ymax, score).
         overlap_threshold: a float number.
         mode: 'union' or 'min'.
-
     Returns:
         list with indices of the selected boxes
     """
@@ -70,10 +68,8 @@ def nms(boxes, overlap_threshold=0.5, mode='union'):
 
 def convert_to_square(bboxes):
     """Convert bounding boxes to a square form.
-
     Arguments:
         bboxes: a float numpy array of shape [n, 5].
-
     Returns:
         a float numpy array of shape [n, 5],
             squared bounding boxes.
@@ -94,11 +90,9 @@ def convert_to_square(bboxes):
 def calibrate_box(bboxes, offsets):
     """Transform bounding boxes to be more like true bounding boxes.
     'offsets' is one of the outputs of the nets.
-
     Arguments:
         bboxes: a float numpy array of shape [n, 5].
         offsets: a float numpy array of shape [n, 4].
-
     Returns:
         a float numpy array of shape [n, 5].
     """
@@ -126,12 +120,10 @@ def calibrate_box(bboxes, offsets):
 
 def get_image_boxes(bounding_boxes, img, size=24):
     """Cut out boxes from the image.
-
     Arguments:
         bounding_boxes: a float numpy array of shape [n, 5].
         img: an instance of PIL.Image.
         size: an integer, size of cutouts.
-
     Returns:
         a float numpy array of shape [n, 3, size, size].
     """
@@ -162,13 +154,11 @@ def get_image_boxes(bounding_boxes, img, size=24):
 def correct_bboxes(bboxes, width, height):
     """Crop boxes that are too big and get coordinates
     with respect to cutouts.
-
     Arguments:
         bboxes: a float numpy array of shape [n, 5],
             where each row is (xmin, ymin, xmax, ymax, score).
         width: a float number.
         height: a float number.
-
     Returns:
         dy, dx, edy, edx: a int numpy arrays of shape [n],
             coordinates of the boxes with respect to the cutouts.
@@ -176,7 +166,6 @@ def correct_bboxes(bboxes, width, height):
             corrected ymin, xmin, ymax, xmax.
         h, w: a int numpy arrays of shape [n],
             just heights and widths of boxes.
-
         in the following order:
             [dy, edy, dx, edx, y, ey, x, ex, w, h].
     """
@@ -225,10 +214,8 @@ def correct_bboxes(bboxes, width, height):
 
 def _preprocess(img):
     """Preprocessing step before feeding the network.
-
     Arguments:
         img: a float numpy array of shape [h, w, c].
-
     Returns:
         a float numpy array of shape [1, c, h, w].
     """

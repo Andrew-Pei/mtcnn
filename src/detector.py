@@ -15,7 +15,6 @@ def detect_faces(image, min_face_size=20.0,
         min_face_size: a float number.
         thresholds: a list of length 3.
         nms_thresholds: a list of length 3.
-
     Returns:
         two float numpy arrays of shapes [n_boxes, 4] and [n_boxes, 10],
         bounding boxes and facial landmarks.

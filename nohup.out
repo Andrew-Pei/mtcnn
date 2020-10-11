@@ -1,0 +1,111 @@
+08/07/2020 11:54:37 PM INFO: Reading notebook mp4_to_jpg.ipynb
+08/07/2020 11:54:38 PM INFO: Running cell:
+#coding=gbk
+import cv2
+import os, sys, stat
+import time
+from tqdm import tqdm
+import pandas as pd
+
+
+08/07/2020 11:54:38 PM INFO: Cell returned
+08/07/2020 11:54:38 PM INFO: Running cell:
+#提取离散帧和连续帧
+
+#离散帧
+#real：5-250
+#fake：5-50
+
+#连续帧
+#real：50-99
+#fake：90-99
+
+discrete_real_list=[]
+for i in range(5,251,5):
+    discrete_real_list.append(i)
+discrete_fake_list=[]
+for i in range(5,51,5):
+    discrete_fake_list.append(i)
+consecutive_real_list=[]
+for i in range(50,100):
+    consecutive_real_list.append(i)
+consecutive_fake_list=[]
+for i in range(90,100):
+    consecutive_fake_list.append(i)
+#print(discrete_real_list,"\n",discrete_fake_list,"\n",consecutive_real_list,"\n",consecutive_fake_list)
+
+08/07/2020 11:54:38 PM INFO: Cell returned
+08/07/2020 11:54:38 PM INFO: Running cell:
+#主程序
+for num in range(4,50):
+    metadata = pd.read_json(
+        "/data1/pbw_deepfake/train/dfdc_train_part_%d/dfdc_train_part_%d/metadata.json" % (num, num))
+    # metadata
+    g = os.walk(
+        "/data1/pbw_deepfake/train/dfdc_train_part_%d/dfdc_train_part_%d/" % (num, num))
+    for path, d, filelist in g:
+        for filename in tqdm(filelist):
+            if filename.endswith('mp4'):
+                a = os.path.join(path, filename)
+                #print(a)
+                if not os.path.exists("/data2/pbw_dfdc/experiment_1/consecutive/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg"):
+                    os.mkdir("/data2/pbw_dfdc/experiment_1/consecutive/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg", 777)
+                    os.chmod("/data2/pbw_dfdc/experiment_1/consecutive/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg", stat.S_IRWXU+stat.S_IRWXG+stat.S_IRWXO)
+                if not os.path.exists("/data2/pbw_dfdc/experiment_1/discrete/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg"):
+                    os.mkdir("/data2/pbw_dfdc/experiment_1/discrete/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg", 777)
+                    os.chmod("/data2/pbw_dfdc/experiment_1/discrete/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg", stat.S_IRWXU+stat.S_IRWXG+stat.S_IRWXO)
+                cap = cv2.VideoCapture("/data1/pbw_deepfake/train/dfdc_train_part_%d/dfdc_train_part_%d/" % (num, num)+filename)
+                suc = cap.isOpened()
+                frame_count = 0
+                #print(suc)
+                while suc:
+                    frame_count += 1
+                    suc, frame = cap.read()
+                    #print(frame_count)
+                    if metadata.loc['label'][filename]=='FAKE':
+                        if suc and frame_count in consecutive_fake_list:
+                            #print('consecutive_fake_list')
+                            cv2.imwrite(os.path.join("/data2/pbw_dfdc/experiment_1/consecutive/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg/%d.jpg" % frame_count), frame)
+                        if suc and frame_count in discrete_fake_list:
+                            #print('discrete_fake_list')
+                            cv2.imwrite(os.path.join("/data2/pbw_dfdc/experiment_1/discrete/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg/%d.jpg" % frame_count), frame)
+                    else:
+                        if suc and frame_count in consecutive_real_list:
+                            #print('consecutive_real_list')
+                            cv2.imwrite(os.path.join("/data2/pbw_dfdc/experiment_1/consecutive/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg/%d.jpg" % frame_count), frame)
+                        if suc and frame_count in discrete_real_list:
+                            #print('discrete_real_list')
+                            cv2.imwrite(os.path.join("/data2/pbw_dfdc/experiment_1/discrete/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg/%d.jpg" % frame_count), frame)
+                cap.release()
+                #print("unlock mp4: ", frame_count-1)
+
+  0%|          | 0/3695 [00:00<?, ?it/s]  0%|          | 1/3695 [00:01<1:03:56,  1.04s/it]  0%|          | 2/3695 [00:02<1:12:19,  1.18s/it]  0%|          | 3/3695 [00:03<1:16:29,  1.24s/it]  0%|          | 4/3695 [00:07<1:50:37,  1.80s/it]  0%|          | 5/3695 [00:10<2:12:37,  2.16s/it]  0%|          | 6/3695 [00:11<1:58:25,  1.93s/it]  0%|          | 7/3695 [00:12<1:48:01,  1.76s/it]  0%|          | 8/3695 [00:14<1:39:18,  1.62s/it]  0%|          | 9/3695 [00:15<1:33:31,  1.52s/it]  0%|          | 10/3695 [00:17<1:53:53,  1.85s/it]  0%|          | 11/3695 [00:19<1:44:01,  1.69s/it]  0%|          | 12/3695 [00:20<1:39:41,  1.62s/it]  0%|          | 13/3695 [00:22<1:34:32,  1.54s/it]  0%|          | 14/3695 [00:23<1:29:36,  1.46s/it]  0%|          | 15/3695 [00:25<1:48:51,  1.77s/it]  0%|          | 16/3695 [00:27<1:40:21,  1.64s/it]  0%|          | 17/3695 [00:28<1:34:14,  1.54s/it]  0%|          | 18/3695 [00:35<3:11:17,  3.12s/it]  1%|          | 19/3695 [00:36<2:41:19,  2.63s/it]  1%|          | 20/3695 [00:40<2:52:40,  2.82s/it]  1%|          | 21/3695 [00:41<2:22:53,  2.33s/it]  1%|          | 22/3695 [00:42<2:06:53,  2.07s/it]  1%|          | 23/3695 [00:45<2:20:22,  2.29s/it]  1%|          | 24/3695 [00:46<2:01:23,  1.98s/it]  1%|          | 25/3695 [00:48<1:50:55,  1.81s/it]  1%|          | 26/3695 [00:50<2:05:38,  2.05s/it]  1%|          | 27/3695 [00:53<2:16:14,  2.23s/it]  1%|          | 28/3695 [00:57<2:39:56,  2.62s/it]  1%|          | 29/3695 [00:58<2:16:35,  2.24s/it]  1%|          | 30/3695 [00:59<2:01:27,  1.99s/it]  1%|          | 31/3695 [01:01<1:49:13,  1.79s/it]  1%|          | 32/3695 [01:04<2:10:28,  2.14s/it]  1%|          | 33/3695 [01:05<1:58:15,  1.94s/it]  1%|          | 34/3695 [01:07<1:53:32,  1.86s/it]  1%|          | 35/3695 [01:08<1:44:18,  1.71s/it]  1%|          | 36/3695 [01:10<1:40:49,  1.65s/it]  1%|          | 37/3695 [01:12<1:58:27,  1.94s/it]  1%|          | 38/3695 [01:14<1:47:52,  1.77s/it]  1%|          | 39/3695 [01:15<1:35:32,  1.57s/it]  1%|          | 40/3695 [01:22<3:15:52,  3.22s/it]  1%|          | 41/3695 [01:23<2:33:38,  2.52s/it]  1%|          | 42/3695 [01:24<2:11:25,  2.16s/it]  1%|          | 43/3695 [01:25<1:55:10,  1.89s/it]  1%|          | 44/3695 [01:26<1:42:54,  1.69s/it]  1%|          | 45/3695 [01:28<1:36:00,  1.58s/it]  1%|          | 46/3695 [01:29<1:24:56,  1.40s/it]  1%|▏         | 47/3695 [01:30<1:22:04,  1.35s/it]  1%|▏         | 48/3695 [01:31<1:19:54,  1.31s/it]  1%|▏         | 49/3695 [01:32<1:17:06,  1.27s/it]  1%|▏         | 50/3695 [01:34<1:23:23,  1.37s/it]  1%|▏         | 51/3695 [01:36<1:44:18,  1.72s/it]  1%|▏         | 52/3695 [01:39<2:02:59,  2.03s/it]  1%|▏         | 53/3695 [01:40<1:46:55,  1.76s/it]  1%|▏         | 54/3695 [01:42<1:38:45,  1.63s/it]  1%|▏         | 55/3695 [01:44<1:58:25,  1.95s/it]  2%|▏         | 56/3695 [01:46<1:52:20,  1.85s/it]  2%|▏         | 57/3695 [01:47<1:42:36,  1.69s/it]  2%|▏         | 58/3695 [01:49<1:34:44,  1.56s/it]  2%|▏         | 59/3695 [01:50<1:32:50,  1.53s/it]  2%|▏         | 60/3695 [01:51<1:26:48,  1.43s/it]  2%|▏         | 61/3695 [01:55<2:00:48,  1.99s/it]  2%|▏         | 62/3695 [01:56<1:50:51,  1.83s/it]  2%|▏         | 63/3695 [01:58<1:45:18,  1.74s/it]  2%|▏         | 64/3695 [01:59<1:36:27,  1.59s/it]  2%|▏         | 65/3695 [02:00<1:30:41,  1.50s/it]  2%|▏         | 66/3695 [02:03<2:01:53,  2.02s/it]  2%|▏         | 67/3695 [02:06<2:17:55,  2.28s/it]  2%|▏         | 68/3695 [02:08<2:04:50,  2.07s/it]  2%|▏         | 69/3695 [02:09<1:54:08,  1.89s/it]  2%|▏         | 70/3695 [02:11<1:45:30,  1.75s/it]  2%|▏         | 71/3695 [02:12<1:34:32,  1.57s/it]  2%|▏         | 72/3695 [02:13<1:29:33,  1.48s/it]  2%|▏         | 73/3695 [02:14<1:23:51,  1.39s/it]  2%|▏         | 74/3695 [02:15<1:18:39,  1.30s/it]  2%|▏         | 75/3695 [02:17<1:16:48,  1.27s/it]  2%|▏         | 76/3695 [02:18<1:21:35,  1.35s/it]  2%|▏         | 77/3695 [02:20<1:29:14,  1.48s/it]  2%|▏         | 78/3695 [02:23<1:56:03,  1.93s/it]  2%|▏         | 79/3695 [02:26<2:12:45,  2.20s/it]  2%|▏         | 80/3695 [02:28<2:22:12,  2.36s/it]  2%|▏         | 81/3695 [02:35<3:43:00,  3.70s/it]  2%|▏         | 82/3695 [02:37<2:59:56,  2.99s/it]  2%|▏         | 83/3695 [02:39<2:45:27,  2.75s/it]  2%|▏         | 84/3695 [02:44<3:37:55,  3.62s/it]  2%|▏         | 85/3695 [02:46<2:58:41,  2.97s/it]  2%|▏         | 86/3695 [02:48<2:46:26,  2.77s/it]  2%|▏         | 87/3695 [02:50<2:21:39,  2.36s/it]  2%|▏         | 88/3695 [02:51<1:58:30,  1.97s/it]  2%|▏         | 89/3695 [02:52<1:50:29,  1.84s/it]  2%|▏         | 90/3695 [02:54<1:58:09,  1.97s/it]  2%|▏         | 91/3695 [02:56<1:46:32,  1.77s/it]  2%|▏         | 92/3695 [02:59<2:07:09,  2.12s/it]  3%|▎         | 93/3695 [03:01<2:15:41,  2.26s/it]  3%|▎         | 94/3695 [03:04<2:16:45,  2.28s/it]  3%|▎         | 95/3695 [03:05<2:00:30,  2.01s/it]  3%|▎         | 96/3695 [03:06<1:40:37,  1.68s/it]  3%|▎         | 97/3695 [03:07<1:36:41,  1.61s/it]  3%|▎         | 98/3695 [03:08<1:23:47,  1.40s/it]  3%|▎         | 99/3695 [03:09<1:16:04,  1.27s/it]  3%|▎         | 100/3695 [03:16<2:58:46,  2.98s/it]  3%|▎         | 101/3695 [03:19<2:56:22,  2.94s/it]  3%|▎         | 102/3695 [03:21<2:32:19,  2.54s/it]  3%|▎         | 103/3695 [03:28<3:59:23,  4.00s/it]  3%|▎         | 104/3695 [03:29<3:11:52,  3.21s/it]  3%|▎         | 105/3695 [03:31<2:38:34,  2.65s/it]  3%|▎         | 106/3695 [03:32<2:13:50,  2.24s/it]  3%|▎         | 107/3695 [03:33<1:53:29,  1.90s/it]  3%|▎         | 108/3695 [03:36<2:06:37,  2.12s/it]  3%|▎         | 109/3695 [03:37<1:53:09,  1.89s/it]  3%|▎         | 110/3695 [03:39<1:46:16,  1.78s/it]  3%|▎         | 111/3695 [03:40<1:31:33,  1.53s/it]  3%|▎         | 112/3695 [03:42<1:48:55,  1.82s/it]  3%|▎         | 113/3695 [03:45<2:02:03,  2.04s/it]  3%|▎         | 114/3695 [03:46<1:46:28,  1.78s/it]  3%|▎         | 115/3695 [03:47<1:32:31,  1.55s/it]  3%|▎         | 116/3695 [03:48<1:32:00,  1.54s/it]  3%|▎         | 117/3695 [03:49<1:22:24,  1.38s/it]  3%|▎         | 118/3695 [03:50<1:17:01,  1.29s/it]  3%|▎         | 119/3695 [03:52<1:16:14,  1.28s/it]  3%|▎         | 120/3695 [03:54<1:36:36,  1.62s/it]  3%|▎         | 121/3695 [03:55<1:26:10,  1.45s/it]  3%|▎         | 122/3695 [03:58<1:47:34,  1.81s/it]  3%|▎         | 123/3695 [04:01<2:07:38,  2.14s/it]  3%|▎         | 124/3695 [04:02<1:47:36,  1.81s/it]  3%|▎         | 125/3695 [04:03<1:40:16,  1.69s/it]  3%|▎         | 126/3695 [04:04<1:31:29,  1.54s/it]  3%|▎         | 127/3695 [04:06<1:24:56,  1.43s/it]  3%|▎         | 128/3695 [04:07<1:23:22,  1.40s/it]  3%|▎         | 129/3695 [04:09<1:37:45,  1.64s/it]  4%|▎         | 130/3695 [04:10<1:32:40,  1.56s/it]  4%|▎         | 131/3695 [04:12<1:30:52,  1.53s/it]  4%|▎         | 132/3695 [04:13<1:25:28,  1.44s/it]  4%|▎         | 133/3695 [04:14<1:22:11,  1.38s/it]  4%|▎         | 134/3695 [04:16<1:17:32,  1.31s/it]  4%|▎         | 135/3695 [04:17<1:19:48,  1.35s/it]  4%|▎         | 136/3695 [04:18<1:21:43,  1.38s/it]  4%|▎         | 137/3695 [04:20<1:22:32,  1.39s/it]  4%|▎         | 138/3695 [04:21<1:27:11,  1.47s/it]  4%|▍         | 139/3695 [04:24<1:50:27,  1.86s/it]Traceback (most recent call last):
+  File "/home/pbw/miniconda3/envs/mtcnn/bin/runipy", line 8, in <module>
+    sys.exit(main())
+  File "/home/pbw/miniconda3/envs/mtcnn/lib/python3.7/site-packages/runipy/main.py", line 158, in main
+    nb_runner.run_notebook(skip_exceptions=args.skip_exceptions)
+  File "/home/pbw/miniconda3/envs/mtcnn/lib/python3.7/site-packages/runipy/notebook_runner.py", line 232, in run_notebook
+    self.run_cell(cell)
+  File "/home/pbw/miniconda3/envs/mtcnn/lib/python3.7/site-packages/runipy/notebook_runner.py", line 138, in run_cell
+    reply = self.kc.get_shell_msg()
+  File "/home/pbw/.local/lib/python3.7/site-packages/jupyter_client/client.py", line 78, in get_shell_msg
+    return self.shell_channel.get_msg(*args, **kwargs)
+  File "/home/pbw/.local/lib/python3.7/site-packages/jupyter_client/blocking/channels.py", line 50, in get_msg
+    ready = self.socket.poll(timeout)
+  File "/home/pbw/.local/lib/python3.7/site-packages/zmq/sugar/socket.py", line 702, in poll
+    evts = dict(p.poll(timeout))
+  File "/home/pbw/.local/lib/python3.7/site-packages/zmq/sugar/poll.py", line 99, in poll
+    return zmq_poll(self.sockets, timeout=timeout)
+  File "zmq/backend/cython/_poll.pyx", line 123, in zmq.backend.cython._poll.zmq_poll
+  File "zmq/backend/cython/checkrc.pxd", line 13, in zmq.backend.cython.checkrc._check_rc
+KeyboardInterrupt
+[IPKernelApp] WARNING | Parent appears to have exited, shutting down.
+  4%|▍         | 140/3695 [04:28<2:19:23,  2.35s/it]  4%|▍         | 141/3695 [04:29<1:59:27,  2.02s/it]  4%|▍         | 142/3695 [04:32<2:17:15,  2.32s/it]  4%|▍         | 143/3695 [04:33<1:58:43,  2.01s/it]  4%|▍         | 144/3695 [04:36<2:05:00,  2.11s/it]  4%|▍         | 145/3695 [04:37<1:46:19,  1.80s/it]  4%|▍         | 146/3695 [04:38<1:34:07,  1.59s/it]  4%|▍         | 147/3695 [04:40<1:45:03,  1.78s/it]  4%|▍         | 148/3695 [04:41<1:32:07,  1.56s/it]  4%|▍         | 149/3695 [04:42<1:22:52,  1.40s/it]  4%|▍         | 150/3695 [04:43<1:17:22,  1.31s/it]  4%|▍         | 151/3695 [04:44<1:13:15,  1.24s/it]  4%|▍         | 152/3695 [04:45<1:12:16,  1.22s/it]  4%|▍         | 153/3695 [04:47<1:09:06,  1.17s/it]  4%|▍         | 154/3695 [04:48<1:10:01,  1.19s/it]  4%|▍         | 155/3695 [04:54<2:34:28,  2.62s/it]  4%|▍         | 156/3695 [04:55<2:07:05,  2.15s/it]  4%|▍         | 157/3695 [04:56<1:48:41,  1.84s/it]  4%|▍         | 158/3695 [04:58<1:57:25,  1.99s/it]  4%|▍         | 159/3695 [04:59<1:40:51,  1.71s/it]  4%|▍         | 160/3695 [05:01<1:49:16,  1.85s/it]  4%|▍         | 161/3695 [05:03<1:38:10,  1.67s/it]  4%|▍         | 162/3695 [05:04<1:28:08,  1.50s/it]  4%|▍         | 163/3695 [05:05<1:19:38,  1.35s/it]  4%|▍         | 164/3695 [05:06<1:14:49,  1.27s/it]  4%|▍         | 165/3695 [05:07<1:11:06,  1.21s/it]  4%|▍         | 166/3695 [05:08<1:06:38,  1.13s/it]  5%|▍         | 167/3695 [05:14<2:26:30,  2.49s/it]  5%|▍         | 168/3695 [05:19<3:25:43,  3.50s/it]  5%|▍         | 169/3695 [05:25<3:57:49,  4.05s/it]  5%|▍         | 170/3695 [05:27<3:25:58,  3.51s/it]  5%|▍         | 171/3695 [05:28<2:45:00,  2.81s/it]  5%|▍         | 172/3695 [05:30<2:34:07,  2.63s/it]  5%|▍         | 173/3695 [05:33<2:27:09,  2.51s/it]  5%|▍         | 174/3695 [05:34<2:01:39,  2.07s/it]  5%|▍         | 175/3695 [05:36<1:59:26,  2.04s/it]  5%|▍         | 176/3695 [05:37<1:40:49,  1.72s/it]  5%|▍         | 177/3695 [05:38<1:28:38,  1.51s/it]  5%|▍         | 178/3695 [05:38<1:17:07,  1.32s/it]  5%|▍         | 179/3695 [05:41<1:31:19,  1.56s/it]  5%|▍         | 180/3695 [05:42<1:20:24,  1.37s/it]  5%|▍         | 181/3695 [05:43<1:14:15,  1.27s/it]  5%|▍         | 182/3695 [05:44<1:08:21,  1.17s/it]  5%|▍         | 183/3695 [05:45<1:10:29,  1.20s/it]  5%|▍         | 184/3695 [05:50<2:23:15,  2.45s/it]  5%|▌         | 185/3695 [05:51<1:57:52,  2.02s/it]  5%|▌         | 186/3695 [05:52<1:43:02,  1.76s/it]  5%|▌         | 187/3695 [05:53<1:29:38,  1.53s/it]  5%|▌         | 188/3695 [05:54<1:19:03,  1.35s/it]  5%|▌         | 189/3695 [05:57<1:36:28,  1.65s/it]  5%|▌         | 190/3695 [05:57<1:23:03,  1.42s/it]  5%|▌         | 191/3695 [05:58<1:15:11,  1.29s/it]  5%|▌         | 192/3695 [06:01<1:28:22,  1.51s/it]  5%|▌         | 193/3695 [06:02<1:34:13,  1.61s/it]  5%|▌         | 194/3695 [06:03<1:24:53,  1.45s/it]  5%|▌         | 195/3695 [06:05<1:18:48,  1.35s/it]  5%|▌         | 196/3695 [06:05<1:10:08,  1.20s/it]  5%|▌         | 197/3695 [06:07<1:24:35,  1.45s/it]  5%|▌         | 198/3695 [06:09<1:18:35,  1.35s/it]  5%|▌         | 199/3695 [06:09<1:10:37,  1.21s/it]  5%|▌         | 200/3695 [06:12<1:27:52,  1.51s/it]  5%|▌         | 201/3695 [06:13<1:18:41,  1.35s/it]  5%|▌         | 202/3695 [06:15<1:32:11,  1.58s/it]  5%|▌         | 203/3695 [06:16<1:22:43,  1.42s/it]  6%|▌         | 204/3695 [06:17<1:15:02,  1.29s/it]  6%|▌         | 205/3695 [06:18<1:11:25,  1.23s/it]  6%|▌         | 206/3695 [06:19<1:09:45,  1.20s/it]  6%|▌         | 207/3695 [06:20<1:05:37,  1.13s/it]  6%|▌         | 208/3695 [06:21<1:00:37,  1.04s/it]  6%|▌         | 209/3695 [06:22<1:05:04,  1.12s/it]  6%|▌         | 210/3695 [06:23<59:52,  1.03s/it]    6%|▌         | 211/3695 [06:24<57:57,  1.00it/s]  6%|▌         | 212/3695 [06:25<58:25,  1.01s/it]  6%|▌         | 213/3695 [06:26<58:28,  1.01s/it]  6%|▌         | 214/3695 [06:27<57:29,  1.01it/s]  6%|▌         | 215/3695 [06:32<2:10:31,  2.25s/it]  6%|▌         | 216/3695 [06:33<1:47:03,  1.85s/it]  6%|▌         | 217/3695 [06:34<1:29:59,  1.55s/it]  6%|▌         | 218/3695 [06:35<1:22:27,  1.42s/it]  6%|▌         | 218/3695 [06:37<1:45:44,  1.82s/it]
+Traceback (most recent call last):
+  File "tizhen.py", line 72, in <module>
+    cv2.imwrite(os.path.join("/data2/pbw_dfdc/experiment_1/discrete/train/"+metadata.loc['label'][filename]+"/pic_"+str(num)+"/"+filename[:-4]+"_jpg/%d.jpg" % frame_count), frame)
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "tizhen.py", line 2, in <module>
+    import cv2
+ModuleNotFoundError: No module named 'cv2'
